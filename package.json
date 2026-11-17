@@ -1,0 +1,14 @@
+{
+  "name": "end-grouping",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "期末分組：GitHub Pages網頁與Google Apps Script試算表後端",
+  "scripts": {
+    "build": "node scripts/build-apps-script.mjs && node scripts/build-github-pages.mjs",
+    "test": "node scripts/build-apps-script.mjs && node --test tests/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

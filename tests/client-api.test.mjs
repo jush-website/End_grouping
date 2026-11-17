@@ -1,0 +1,21 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import vm from 'node:vm';
+import {readFile} from 'node:fs/promises';
+import {randomUUID} from 'node:crypto';
+const source=await readFile(new URL('../apps-script/client-api.js',import.meta.url),'utf8');
+test('Google iframe can read, log in and log out when browser storage is denied',async()=>{
+ const calls=[];
+ let success;
+ const context=vm.createContext({crypto:{randomUUID},toast:()=>{},google:{script:{run:{withSuccessHandler(fn){success=fn;return this;},withFailureHandler(){return this;},api(request){calls.push(request);success({ok:true,data:request.path==='login'?{token:'fixture-session'}:{ok:true}});}}}}});
+ Object.defineProperty(context,'sessionStorage',{get(){throw new Error('Access is denied for this document');}});
+ vm.runInContext(source,context);
+ await context.api('state');
+ assert.equal(calls.at(-1).token,'');
+ await context.api('login',{password:'fixture-password'});
+ await context.api('state');
+ assert.equal(calls.at(-1).token,'fixture-session');
+ await context.api('logout',{});
+ await context.api('state');
+ assert.equal(calls.at(-1).token,'');
+});
